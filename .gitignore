@@ -1,0 +1,6 @@
+victor
+*.db
+
+!*.nim
+
+.vscode/
