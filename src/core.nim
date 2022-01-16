@@ -41,7 +41,7 @@ proc coreIn *(): void =
     echo "You are now logged in"
 
 proc coreOut *(): void =
-    let logLast = getLogLastOne().get()
+    let logLast = getLogLastOne().get(Log())
     if not logLast.isLogin:
         "You are already logged out".quit(2)
     var note: Option[string]
