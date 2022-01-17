@@ -16,17 +16,18 @@ proc calcTimeSpent (l: seq[Log]): Duration =
 proc echoTable (l: seq[Log]): void =
     var t = newTable(@["SL", "Date", "Time", "Event", "Note"])
     for i, v in l:
+        let time = v.date.toTime.local
         var r = TableRow(
             column: @[
                 $(i+1),
-                v.date.getDateStr(),
-                v.date.getClockStr(),
+                time.format("dd/MM/yyyy"),
+                time.format("HH:MM"),
                 if v.isLogin: "Login" else: "Logout",
                 v.note.get("")
             ]
         )
         addToTable(t, r)
-    t.show()
+    t.show
     echo calcTimeSpent(l)
 
 proc coreIn *(): void =
