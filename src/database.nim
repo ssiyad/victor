@@ -1,7 +1,7 @@
-import std/[logging, with, options, times, algorithm]
+import std/[os, logging, with, options, times, algorithm]
 import norm/[sqlite, model]
 
-let db* = open("db.db", "", "", "")
+let db* = open(joinPath(getHomeDir(), ".victor.db"), "", "", "")
 
 type Log * = ref object of Model
     date*: DateTime
