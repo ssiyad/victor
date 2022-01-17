@@ -1,9 +1,9 @@
 import std/[strutils, sequtils, algorithm]
 
-type TableRow * = object
+type TableRow * = ref object
     column*: seq[string]
 
-type Table * = object
+type Table * = ref object
     column*: seq[int]
     titles*: seq[string]
     rows: seq[TableRow]
