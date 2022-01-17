@@ -14,6 +14,8 @@ proc calcTimeSpent (l: seq[Log]): Duration =
     d
 
 proc echoTable (l: seq[Log]): void =
+    if l.len == 0:
+        quit("Nothing to show", 0)
     var t = newTable(@["SL", "Date", "Time", "Event", "Note"])
     for i, v in l:
         let time = v.date.toTime.local
