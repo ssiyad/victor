@@ -1,4 +1,4 @@
-import std/[os, times, strutils, options]
+import std/[os, times, strutils, options, strformat]
 
 import database
 import table
@@ -17,6 +17,19 @@ proc calcTimeSpent (l: seq[Log]): Duration =
             d = d + (v.date - l[i-1].date)
     d
 
+proc prettyDuration (d: Duration): string =
+    let p = d.toParts()
+    if p[Weeks] != 0:
+        return &"{p[Weeks]} weeks, {p[Days]} days"
+    elif p[Days] != 0:
+        return &"{p[Days]} days, {p[Hours]} hours"
+    elif p[Hours] != 0:
+        return &"{p[Hours]} hours, {p[Minutes]} minutes"
+    elif p[Minutes] != 0:
+        return &"{p[Minutes]} minutes, {p[Seconds]} seconds"
+    else:
+        return $(d)
+
 proc echoTable (l: seq[Log]): void =
     var e: seq[Event]
     for i, v in l:
@@ -33,13 +46,13 @@ proc echoTable (l: seq[Log]): void =
                 v.startLog.note.get(""),
                 v.startLog.date.format("HH:MM"),
                 v.endLog.date.format("HH:MM"),
-                $(v.endLog.date - v.startLog.date),
+                prettyDuration(v.endLog.date - v.startLog.date),
             ]
         )
         addToTable(t, r)
     t.show
     if len(e) > 1:
-        echo "Total: ", calcTimeSpent(l)
+        echo "Total: ", prettyDuration(calcTimeSpent(l))
 
 proc coreIn *(): void =
     let logLast = getLogLastOne().get(Log())
