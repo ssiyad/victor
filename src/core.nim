@@ -44,8 +44,8 @@ proc echoTable (l: seq[Log]): void =
             column: @[
                 $(i+1),
                 v.startLog.note.get(""),
-                v.startLog.date.format("HH:MM"),
-                v.endLog.date.format("HH:MM"),
+                v.startLog.date.toTime().format("hh:mm tt", zone = local()),
+                v.endLog.date.toTime().format("hh:mm tt", zone = local()),
                 prettyDuration(v.endLog.date - v.startLog.date),
             ]
         )
