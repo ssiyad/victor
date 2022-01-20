@@ -5,6 +5,10 @@ import table
 
 createTables()
 
+type Event = ref object
+    startLog: Log
+    endLog: Log
+
 proc calcTimeSpent (l: seq[Log]): Duration =
     var d = initDuration()
     for i, v in l:
@@ -14,23 +18,28 @@ proc calcTimeSpent (l: seq[Log]): Duration =
     d
 
 proc echoTable (l: seq[Log]): void =
-    if l.len == 0:
-        quit("Nothing to show", 0)
-    var t = newTable(@["SL", "Date", "Time", "Event", "Note"])
+    var e: seq[Event]
     for i, v in l:
-        let time = v.date.toTime.local
+        if v.isLogin:
+            if i + 1 == len(l): continue
+            add(e, Event(startLog: v, endLog: l[i+1]))
+    if len(e) == 0:
+        quit("Nothing to show", 0)
+    var t = newTable(@["SL", "Event", "Start", "End", "Duration"])
+    for i, v in e:
         var r = TableRow(
             column: @[
                 $(i+1),
-                time.format("dd/MM/yyyy"),
-                time.format("HH:MM"),
-                if v.isLogin: "Login" else: "Logout",
-                v.note.get("")
+                v.startLog.note.get(""),
+                v.startLog.date.format("HH:MM"),
+                v.endLog.date.format("HH:MM"),
+                $(v.endLog.date - v.startLog.date),
             ]
         )
         addToTable(t, r)
     t.show
-    echo calcTimeSpent(l)
+    if len(e) > 1:
+        echo "Total: ", calcTimeSpent(l)
 
 proc coreIn *(): void =
     let logLast = getLogLastOne().get(Log())
@@ -65,7 +74,6 @@ proc logLast(): void =
 proc logLastHour(): void =
     let l = getLogLastNMinute(60)
     echoTable(l)
-    discard calcTimeSpent(l)
 
 proc logLastDay(): void =
     let l = getLogLastNMinute(1440)
