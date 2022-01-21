@@ -1,4 +1,4 @@
-import std/[os, logging, with, options, times, algorithm]
+import std/[os, logging, with, options, times, algorithm, strformat]
 import norm/[sqlite, model]
 
 let db* = open(joinPath(getHomeDir(), ".victor.db"), "", "", "")
@@ -28,14 +28,25 @@ proc getLogLast *(n: int): seq[Log] =
 proc getLogLastOne *(): Option[Log] =
     var l = getLogLast(1)
     if l.len() > 0:
-        return some(l.pop())
+        return some(pop(l))
 
 proc getLogLastNMinute *(n: int): seq[Log] =
     var d = now() - initDuration(minutes = n)
     var l = @[Log()]
     with db:
-        select(l, "date > ? ORDER BY id DESC", d.toTime().toUnix())
-    l.reversed()
+        select(l, "date > ?", d.toTime().toUnix())
+    l
+
+proc getLogLastDay *(): seq[Log] =
+    var l = @[Log()]
+    let today = now().format("yyyy-MM-dd")
+    with db:
+        select(
+            l,
+            "datetime(date, 'unixepoch', 'localtime') LIKE ?",
+            &"{today}%",
+        )
+    l
 
 proc createTables *() =
     db.createTables(createLog(now(), true))

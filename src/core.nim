@@ -89,7 +89,7 @@ proc logLastHour(): void =
     echoTable(l)
 
 proc logLastDay(): void =
-    let l = getLogLastNMinute(1440)
+    let l = getLogLastDay()
     echoTable(l)
 
 proc coreLog *(): void =
