@@ -2,6 +2,7 @@ import std/[os, times, strutils, options, strformat]
 
 import database
 import table
+import help
 
 createTables()
 
@@ -58,9 +59,10 @@ proc coreIn *(): void =
     let logLast = getLogLastOne().get(Log())
     if logLast.isLogin:
         "You are already logged in".quit(2)
-    var note: Option[string]
-    if paramCount() >= 2:
-        note = some(paramStr(2))
+    if paramCount() < 2:
+        help()
+        quit(1)
+    let note = some(paramStr(2))
     var l = createLog(now(), true, note)
     insertLog(l)
     echo "You are now logged in"
@@ -69,12 +71,9 @@ proc coreOut *(): void =
     let logLast = getLogLastOne().get(Log())
     if not logLast.isLogin:
         "You are already logged out".quit(2)
-    var note: Option[string]
-    if paramCount() >= 2:
-        note = some(paramStr(2))
-    var l = createLog(now(), false, note)
+    var l = createLog(now(), false)
     insertLog(l)
-    echo "You are now logged out"
+    echo "You are now logged out of \"", logLast.note.get(), "\""
 
 proc logLast(): void =
     var n: int = 10
