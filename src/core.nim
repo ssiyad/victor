@@ -35,8 +35,7 @@ proc echoTable (l: seq[Log]): void =
     var e: seq[Event]
     for i, v in l:
         if v.isLogin:
-            if i + 1 == len(l): continue
-            add(e, Event(startLog: v, endLog: l[i+1]))
+            add(e, Event(startLog: v, endLog: if i+1 == len(l): Log() else: l[i+1]))
     if len(e) == 0:
         quit("Nothing to show", 0)
     var t = newTable(@["SL", "Event", "Start", "End", "Duration"])
@@ -46,8 +45,11 @@ proc echoTable (l: seq[Log]): void =
                 $(i+1),
                 v.startLog.note.get(""),
                 v.startLog.date.toTime().format("hh:mm tt", zone = local()),
-                v.endLog.date.toTime().format("hh:mm tt", zone = local()),
-                prettyDuration(v.endLog.date - v.startLog.date),
+                if isInitialized(v.endLog.date):
+                    v.endLog.date.toTime().format("hh:mm tt", zone = local())
+                else:
+                    "",
+                prettyDuration((if isInitialized(v.endLog.date): v.endLog.date else: now()) - v.startLog.date),
             ]
         )
         addToTable(t, r)
