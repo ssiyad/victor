@@ -4,18 +4,20 @@ import norm/[sqlite, model]
 let db* = open(joinPath(getHomeDir(), ".victor.db"), "", "", "")
 
 type Log * = ref object of Model
-    date*: DateTime
-    isLogin*: bool
-    note*: Option[string]
+    startAt*: Option[DateTime]
+    endAt*: Option[DateTime]
+    title*: string
 
 addHandler(newConsoleLogger(fmtStr = ""))
-
-proc createLog *(date: DateTime, isLogin: bool, note = none(string)): Log =
-    Log(date: date, isLogin: isLogin, note: note)
 
 proc insertLog *(log: var Log): void =
     with db:
         insert(log)
+
+proc updateLog *(log: var Log): Log {.discardable.} =
+    with db:
+        update(log)
+    log
 
 proc getLogLast *(n: int): seq[Log] =
     var l = @[Log()]
@@ -34,7 +36,7 @@ proc getLogLastNMinute *(n: int): seq[Log] =
     var d = now() - initDuration(minutes = n)
     var l = @[Log()]
     with db:
-        select(l, "date > ?", d.toTime().toUnix())
+        select(l, "startAt > ? OR endAt > ?", d.toTime().toUnix())
     l
 
 proc getLogLastDay *(): seq[Log] =
@@ -43,10 +45,10 @@ proc getLogLastDay *(): seq[Log] =
     with db:
         select(
             l,
-            "datetime(date, 'unixepoch', 'localtime') LIKE ?",
+            "datetime(startAt, 'unixepoch', 'localtime') LIKE ? OR datetime(endAt, 'unixepoch', 'localtime') LIKE ?",
             &"{today}%",
         )
     l
 
 proc createTables *() =
-    db.createTables(createLog(now(), true))
+    db.createTables(Log())

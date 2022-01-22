@@ -6,16 +6,10 @@ import help
 
 createTables()
 
-type Event = ref object
-    startLog: Log
-    endLog: Log
-
 proc calcTimeSpent (l: seq[Log]): Duration =
     var d = initDuration()
     for i, v in l:
-        if not v.isLogin:
-            if i == 0: continue
-            d = d + (v.date - l[i-1].date)
+        d = d + (v.endAt.get(now()) - v.startAt.get())
     d
 
 proc prettyDuration (d: Duration): string =
@@ -32,50 +26,43 @@ proc prettyDuration (d: Duration): string =
         return $(d)
 
 proc echoTable (l: seq[Log]): void =
-    var e: seq[Event]
-    for i, v in l:
-        if v.isLogin:
-            add(e, Event(startLog: v, endLog: if i+1 == len(l): Log() else: l[i+1]))
-    if len(e) == 0:
+    if len(l) == 0:
         quit("Nothing to show", 0)
     var t = newTable(@["SL", "Event", "Start", "End", "Duration"])
-    for i, v in e:
+    for i, v in l:
         var r = TableRow(
             column: @[
                 $(i+1),
-                v.startLog.note.get(""),
-                v.startLog.date.toTime().format("hh:mm tt", zone = local()),
-                if isInitialized(v.endLog.date):
-                    v.endLog.date.toTime().format("hh:mm tt", zone = local())
-                else:
-                    "",
-                prettyDuration((if isInitialized(v.endLog.date): v.endLog.date else: now()) - v.startLog.date),
+                v.title,
+                v.startAt.get().toTime().format("hh:mm tt", zone = local()),
+                if isNone(v.endAt): "" else: v.endAt.get().toTime().format("hh:mm tt", zone = local()),
+                prettyDuration(v.endAt.get(now()) - v.startAt.get())
             ]
         )
         addToTable(t, r)
     t.show
-    if len(e) > 1:
+    if len(l) > 1:
         echo "Total: ", prettyDuration(calcTimeSpent(l))
 
 proc coreIn *(): void =
     let logLast = getLogLastOne().get(Log())
-    if logLast.isLogin:
-        "You are already logged in".quit(2)
+    if isNone(logLast.endAt):
+        quit("You are already logged in", 2)
     if paramCount() < 2:
         help()
         quit(1)
-    let note = some(paramStr(2))
-    var l = createLog(now(), true, note)
+    let title = paramStr(2)
+    var l = Log(startAt: some(now()), title: title)
     insertLog(l)
     echo "You are now logged in"
 
 proc coreOut *(): void =
-    let logLast = getLogLastOne().get(Log())
-    if not logLast.isLogin:
-        "You are already logged out".quit(2)
-    var l = createLog(now(), false)
-    insertLog(l)
-    echo "You are now logged out of \"", logLast.note.get(), "\""
+    var l = getLogLastOne().get(Log())
+    if not isNone(l.endAt):
+        quit("You are already logged out", 2)
+    l.endAt = some(now())
+    updateLog(l)
+    echo "You are now logged out of \"", l.title, "\""
 
 proc logLast(): void =
     var n: int = 10
