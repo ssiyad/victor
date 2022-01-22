@@ -1,4 +1,4 @@
-import std/[strutils, sequtils, algorithm]
+import std/[strutils, sequtils, algorithm, terminal]
 
 type TableRow * = ref object
     column*: seq[string]
@@ -31,7 +31,8 @@ proc show *(t: var Table): void =
     echo "-".repeat(t.width)
     stdout.write "| "
     for i, title in t.titles:
-        stdout.write(alignLeft(title, t.column[i]), " | ")
+        styledWrite(stdout, styleBright, alignLeft(title, t.column[i]))
+        stdout.write " | "
     stdout.write "\n"
     echo "-".repeat(t.width)
     for r in t.rows.reversed:
