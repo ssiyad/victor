@@ -45,8 +45,8 @@ proc echoTable (l: seq[Log]): void =
         echo "Total: ", prettyDuration(calcTimeSpent(l))
 
 proc coreIn *(): void =
-    let logLast = getLogLastOne().get(Log())
-    if isNone(logLast.endAt):
+    let logLast = getLogLastOne()
+    if isSome(logLast) and isNone(logLast.get().endAt):
         quit("You are already logged in", 2)
     if paramCount() < 2:
         help()
@@ -57,9 +57,12 @@ proc coreIn *(): void =
     echo "You are now logged in"
 
 proc coreOut *(): void =
-    var l = getLogLastOne().get(Log())
-    if not isNone(l.endAt):
+    let logLast = getLogLastOne()
+    if isNone(logLast):
+        quit("You are not logged in")
+    if isSome(logLast.get().endAt):
         quit("You are already logged out", 2)
+    var l = logLast.get()
     l.endAt = some(now())
     updateLog(l)
     echo "You are now logged out of \"", l.title, "\""
