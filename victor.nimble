@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.2"
+version       = "0.4"
 author        = "Sabu Siyad"
 description   = "Command line tool to log activity"
 license       = "Apache-2.0"
