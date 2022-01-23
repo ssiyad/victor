@@ -1,7 +1,7 @@
 import std/os
 
-import src/core
-import src/help
+import victor/core
+import victor/help
 
 if paramCount() == 0:
     help()
@@ -14,5 +14,7 @@ of "out":
     core.coreOut()
 of "log":
     core.coreLog()
+of "version":
+    version()
 else:
     help()
