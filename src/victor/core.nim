@@ -67,7 +67,7 @@ proc coreOut *(): void =
     updateLog(l)
     echo "You are now logged out of \"", l.title, "\""
 
-proc logLast(): void =
+proc logLast (): void =
     var n: int = 10
     try:
         n = parseInt(paramStr(2))
@@ -75,18 +75,36 @@ proc logLast(): void =
     let l = getLogLast(n)
     echoTable(l)
 
-proc logLastHour(): void =
-    let l = getLogLastNMinute(60)
+proc logLastHour (): void =
+    var n = 60
+    try:
+        n = parseInt(paramStr(3))
+    except: discard
+    let l = getLogLastNMinute(n * 60)
     echoTable(l)
 
-proc logLastDay(): void =
-    let l = getLogLastDay()
+proc logLastDay (): void =
+    var n = 1
+    try:
+        n = parseInt(paramStr(3))
+    except: discard
+    let l = getLogLastDay(1)
+    echoTable(l)
+
+proc logToday (): void =
+    let date = now().format("yyyy-MM-dd")
+    let l = getLogLastDay(date)
+    echoTable(l)
+
+proc logYesterday (): void =
+    let date = (now() - initDuration(days = 1)).format("yyyy-MM-dd")
+    let l = getLogLastDay(date)
     echoTable(l)
 
 proc coreLog *(): void =
     var timespan: string
     if paramCount() < 2:
-        timespan = "day"
+        timespan = "today"
     else:
         timespan = paramStr(2)
     case timespan
@@ -94,5 +112,9 @@ proc coreLog *(): void =
         logLastHour()
     of "day":
         logLastDay()
+    of "today":
+        logToday()
+    of "yesterday":
+        logYesterday()
     else:
         logLast()

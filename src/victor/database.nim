@@ -39,14 +39,16 @@ proc getLogLastNMinute *(n: int): seq[Log] =
         select(l, "startAt > ? OR endAt > ?", d.toTime().toUnix())
     l
 
-proc getLogLastDay *(): seq[Log] =
+proc getLogLastDay *(n: int): seq[Log] =
+    getLogLastNMinute(n * 24 * 60)
+
+proc getLogLastDay *(date: string): seq[Log] =
     var l = @[Log()]
-    let today = now().format("yyyy-MM-dd")
     with db:
         select(
             l,
             "datetime(startAt, 'unixepoch', 'localtime') LIKE ? OR datetime(endAt, 'unixepoch', 'localtime') LIKE ?",
-            &"{today}%",
+            &"{date}%",
         )
     l
 
